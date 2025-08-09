@@ -18,6 +18,7 @@ import com.andre.todo.api.dto.TaskResponse;
 import com.andre.todo.domain.Task;
 import com.andre.todo.domain.TaskStatus;
 import com.andre.todo.repo.TaskRepository;
+import com.andre.todo.service.TaskService;
 
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +30,9 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
-  private final TaskRepository repo;
-  public TaskController(TaskRepository repo) { this.repo = repo; }
+  private final TaskService service;
+
+  public TaskController(TaskService service) { this.service = service; }
 
   /**
    * List all tasks.
@@ -43,7 +45,7 @@ public class TaskController {
   @GetMapping
   public List<TaskResponse> list() {
     log.info(":: Listing all tasks");
-    return repo.findAll().stream()
+    return service.listAll().stream()
       .map(TaskResponse::from)
       .toList();
   }
@@ -64,7 +66,7 @@ public class TaskController {
     t.setStatus(Optional.ofNullable(req.status()).orElse(TaskStatus.TODO));
     log.info(":: Creating task: {}", t);
 
-    Task saved = repo.save(t);
+    Task saved = service.create(t.getTitle(), t.getStatus());
     return ResponseEntity.created(URI.create("api/tasks/" + saved.getId())).body(TaskResponse.from(saved));
   }
 
@@ -77,11 +79,10 @@ public class TaskController {
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     log.info(":: Deleting task: {}", id);
-    if (!repo.existsById(id)) {
+    if (!service.delete(id)) {
       log.info(":: Task not found: {}", id);
       return ResponseEntity.notFound().build();
     }
-    repo.deleteById(id);
     log.info(":: Task deleted: {}", id);
     return ResponseEntity.noContent().build();
   }
