@@ -20,10 +20,12 @@ import com.andre.todo.domain.TaskStatus;
 import com.andre.todo.repo.TaskRepository;
 
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Controller for managing tasks.
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {
@@ -40,6 +42,7 @@ public class TaskController {
    */
   @GetMapping
   public List<TaskResponse> list() {
+    log.info(":: Listing all tasks");
     return repo.findAll().stream()
       .map(TaskResponse::from)
       .toList();
@@ -59,6 +62,7 @@ public class TaskController {
     Task t = new Task();
     t.setTitle(req.title());
     t.setStatus(Optional.ofNullable(req.status()).orElse(TaskStatus.TODO));
+    log.info(":: Creating task: {}", t);
 
     Task saved = repo.save(t);
     return ResponseEntity.created(URI.create("api/tasks/" + saved.getId())).body(TaskResponse.from(saved));
@@ -72,10 +76,13 @@ public class TaskController {
    */
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
+    log.info(":: Deleting task: {}", id);
     if (!repo.existsById(id)) {
+      log.info(":: Task not found: {}", id);
       return ResponseEntity.notFound().build();
     }
     repo.deleteById(id);
+    log.info(":: Task deleted: {}", id);
     return ResponseEntity.noContent().build();
   }
 }
