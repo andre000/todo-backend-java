@@ -17,7 +17,6 @@ import com.andre.todo.api.dto.CreateTaskRequest;
 import com.andre.todo.api.dto.TaskResponse;
 import com.andre.todo.domain.Task;
 import com.andre.todo.domain.TaskStatus;
-import com.andre.todo.repo.TaskRepository;
 import com.andre.todo.service.TaskService;
 
 import jakarta.validation.Valid;
